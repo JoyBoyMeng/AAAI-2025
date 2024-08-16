@@ -270,22 +270,22 @@ class LLMEmbedding(nn.Module):
             len_source_neighbor = len(source_neighbor)
             len_destination_neighbor = len(destination_neighbor)
             if self.dataset == 'yelpv2':
-                p1, p2, p3, p4, p5 = 10, 13, 10, 13, 14
+                p1, p2, p3, p4, p5 = 11, 14, 12, 14, 15
             elif self.dataset == 'reddit':
                 p1, p2, p3, p4, p5 = 13, 21, 13, 21, 20
             elif self.dataset == 'recipev2':
-                p1, p2, p3, p4, p5 = 10, 13, 10, 13, 14
+                p1, p2, p3, p4, p5 = 11, 15, 12, 15, 16
             elif self.dataset == 'clothing':
-                p1, p2, p3, p4, p5 = 10, 13, 11, 13, 14
+                p1, p2, p3, p4, p5 = 11, 14, 13, 14, 15
 
             if len_source_neighbor < 10:
                 len_tokens_prompt1 = p1
             else:
-                len_tokens_prompt1 = p1
+                len_tokens_prompt1 = p1 + 1
             if len_destination_neighbor < 10:
                 len_tokens_prompt3 = p3
             else:
-                len_tokens_prompt3 = p3
+                len_tokens_prompt3 = p3 + 1
             len_tokens_prompt2 = p2
             len_tokens_prompt4 = p4
             len_tokens_prompt5 = p5
@@ -311,7 +311,7 @@ class LLMEmbedding(nn.Module):
             time_delta_encoding = self.time_encoder(time_delta.unsqueeze(dim=1)).view(len(tmptimes_ago), -1)
             time_delta_encoding = self.expand_time(time_delta_encoding)
 
-            # 起始符
+            # bls
             memory_bls_src = memory_output_1[0].unsqueeze(0)
             memory_bls_dst = memory_output_2[0].unsqueeze(0)
             time_bls_encoding = time_delta_encoding[0].unsqueeze(0)
@@ -417,7 +417,6 @@ class LLMEmbedding(nn.Module):
         # history_bus = 'User [user] commented on business [business] at time [tij].\n'
         # prompt_qs = 'Will user [user] comment on business [business] at time [tij]?\n'
 
-        # 将source、destination、negative对应的节点、节点邻居数组、交互时间、边id区分开
         source_texts = texts[:n_samples]
         destination_texts = texts[n_samples:2 * n_samples]
         sample_texts = texts[2 * n_samples:]

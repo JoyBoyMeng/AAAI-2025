@@ -85,24 +85,24 @@ class ShrinkMessage(torch.nn.Module):
 class Score(torch.nn.Module):
     def __init__(self, input_dim=172, hidden_dim=64, output_dim=1):
         super(Score, self).__init__()
-        self.fc1 = torch.nn.Linear(input_dim, hidden_dim)  # 输入到隐藏层的全连接层
-        self.relu = torch.nn.ReLU()  # 隐藏层的激活函数
-        self.fc2 = torch.nn.Linear(hidden_dim, output_dim)  # 隐藏层到输出层的全连接层
+        self.fc1 = torch.nn.Linear(input_dim, hidden_dim)
+        self.relu = torch.nn.ReLU()
+        self.fc2 = torch.nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
-        x = self.fc1(x)  # 输入到隐藏层的全连接层
-        x = self.relu(x)  # 使用ReLU激活函数
-        x = self.fc2(x)  # 隐藏层到输出层的全连接层
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
         return x
 
 class ReductionLayer(torch.nn.Module):
   def __init__(self, input_dim, output_dim):
     super(ReductionLayer, self).__init__()
-    self.fc1 = torch.nn.Linear(input_dim, 1024)  # 隐藏层1
-    self.fc2 = torch.nn.Linear(1024, 512)  # 隐藏层2
-    self.fc3 = torch.nn.Linear(512, 256)  # 隐藏层3
-    self.fc4 = torch.nn.Linear(256, output_dim)  # 输出层
-    self.relu = torch.nn.ReLU()  # ReLU激活函数
+    self.fc1 = torch.nn.Linear(input_dim, 1024)
+    self.fc2 = torch.nn.Linear(1024, 512)
+    self.fc3 = torch.nn.Linear(512, 256)
+    self.fc4 = torch.nn.Linear(256, output_dim)
+    self.relu = torch.nn.ReLU()
 
   def forward(self, x):
     x = self.relu(self.fc1(x))

@@ -23,11 +23,9 @@ class MemLLM(torch.nn.Module):
             device)
         # self.LLM = torch.nn.DataParallel(self.LLM)
         self.tokenizer = AutoTokenizer.from_pretrained(llm_path, use_fast=False)
-        self.tokenizer.pad_token = '<|end_of_text|>'  # 用于批量预处理
+        self.tokenizer.pad_token = '[PAD]'
         max_length = self.tokenizer.model_max_length
         pad_token_id = self.tokenizer.pad_token_id
-        print("分词器支持的最大输入长度:", max_length)
-        print("填充标记的 ID:", pad_token_id)
         # add tokens
         assert num_nodes == num_users + num_items, 'Wrong! num_nodes != num_users + num_items'
         new_tokens = []
@@ -216,24 +214,24 @@ class MemLLM(torch.nn.Module):
             graph_texts = np.array(self.graph_texts)[edge_idxs]
             if self.dataset == 'yelpv2' or self.dataset == 'recipev2' or self.dataset == 'clothing':
                 link_texts = np.array(self.link_texts)[edge_idxs]
-                # 合并prompt与text
+                # prompt + text
                 texts = np.core.defchararray.add(graph_texts, link_texts)
             elif self.dataset == 'reddit':
                 texts = graph_texts
             token_ids = [self.preprocess_text(text) for text in texts]
             token_ids = pad_sequence(token_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id)
-            # 创建注意力掩码
+            # mask
             attention_masks = (token_ids != self.tokenizer.pad_token_id).type(torch.float).to(self.device)
             # LLM
             token_embeddings = self.LLM.model.get_input_embeddings()(token_ids)
 
-            # 扩展memory维度与token维度保持一致
+            # expand memory dim as token dim
             source_num = source_memory.shape[0]
             memory_input = torch.concat([source_memory, destination_memory], dim=0)
             memory_output = self.expand_memory(memory_input)
             source_memory = memory_output[0:source_num]
             destination_memory = memory_output[source_num:]
-            # 将token、memory、time融合
+            # Integrate token, memory, and time.
             source_memory = source_memory.unsqueeze(1)  # Shape: (2, 1, 4096)
             destination_memory = destination_memory.unsqueeze(1)  # Shape: (2, 1, 4096)
             source_time_delta_encoding = source_time_delta_encoding.unsqueeze(1)  # Shape: (2, 1, 4096)
@@ -244,19 +242,19 @@ class MemLLM(torch.nn.Module):
             source_time_delta_encoding = source_time_delta_encoding.expand(-1, dimm, -1)  # Shape: (2, 43, 4096)
             token_embeddings_bias = self.fix_embedding(
                 torch.concat([token_embeddings, source_memory, destination_memory, source_time_delta_encoding], dim=2))
-            # 输入LLM
+            # input LLM
             embeddings = \
                 self.LLM.model(inputs_embeds=token_embeddings_bias.to(torch.bfloat16), attention_mask=attention_masks)[
                     0]
 
-            # 获取句子的平均嵌入
+            # Obtain the average embedding of a sentence.
             attention_masks_sum = attention_masks.sum(dim=1, keepdim=True)
             sentence_embeddings = (embeddings * attention_masks.unsqueeze(-1)).sum(dim=1) / attention_masks_sum
 
-            # 用sentence embedding获取message
+            #  use sentence embedding as message
             sentence_messages = self.shrink_message(sentence_embeddings.to(torch.float32))
 
-        # 存储message
+        # store message
         messages = defaultdict(list)
         unique_sources = np.unique(source_nodes)
         for i in range(len(source_nodes)):

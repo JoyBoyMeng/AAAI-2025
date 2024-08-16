@@ -24,11 +24,10 @@ def get_data(dataset_name):
         #
         # review_texts = review_texts.tolist()
         # graph_texts = graph_texts.tolist()
-        # # 在列表的前面插入新的字符串
         # new_string = 'This is a start str that will never be used'
         # review_texts = [new_string] + review_texts
         # graph_texts = [new_string] + graph_texts
-        edge_raw_features = np.load(f'../datasets/{dataset_name}/embeddings_llama3.npy')
+        edge_raw_features = np.load(f'../datasets/{dataset_name}/embeddings.npy')
         zero_vector = np.zeros((1, 4096))  # 4096 768
         edge_raw_features = np.vstack((zero_vector, edge_raw_features))
     elif dataset_name == 'recipev2' or dataset_name == 'clothing':
@@ -37,11 +36,10 @@ def get_data(dataset_name):
         # graph_texts = np.load(f'../datasets/{dataset_name}/talkasgraph_unify.npy', mmap_mode='r')
         # review_texts = review_texts.tolist()
         # graph_texts = graph_texts.tolist()
-        # # 在列表的前面插入新的字符串
         # new_string = 'This is a start str that will never be used'
         # review_texts = [new_string] + review_texts
         # graph_texts = [new_string] + graph_texts
-        edge_raw_features = np.load(f'../datasets/{dataset_name}/embeddings_llama3.npy')
+        edge_raw_features = np.load(f'../datasets/{dataset_name}/embeddings.npy')
         zero_vector = np.zeros((1, 4096))  # 4096 768
         edge_raw_features = np.vstack((zero_vector, edge_raw_features))
     elif dataset_name == 'reddit':

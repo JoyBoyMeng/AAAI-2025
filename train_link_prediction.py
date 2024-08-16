@@ -27,7 +27,7 @@ if __name__ == "__main__":
     parser.add_argument('--bs', type=int, default=2, help='Batch_size')
     parser.add_argument('--n_epoch', type=int, default=50, help='Number of epochs')
     parser.add_argument('--gpu', type=int, default=0, help='gpu')
-    parser.add_argument('--llm_path', type=str, default='/root/autodl-tmp/LLM/Meta-Llama-3-8B-Instruct', help='Pretrained LLM path')
+    parser.add_argument('--llm_path', type=str, default='../LLM/shakechen/Llama-2-7b-hf', help='Pretrained LLM path')
     parser.add_argument('--mem_dim', type=int, default=172, help='Dimensions of the memory')
     parser.add_argument('--mess_dim', type=int, default=100, help='Dimensions of the message')
     parser.add_argument('--token_dim', type=int, default=4096, help='Dimensions of the message')
@@ -95,16 +95,16 @@ if __name__ == "__main__":
                     std_time_shift_dst, train_ngh_finder, node_raw_features, edge_raw_features, dataset_name)
     memllm.to(device)
 
-    # 查看模型参数名称、size、占用量
+
     print(memllm)
     # state_dict = memllm.state_dict()
     # for param_name, param_tensor in state_dict.items():
     #     param_size = param_tensor.size()
-    #     memory_size = get_memory_size(param_tensor) / (1024 ** 2)  # 转换为 MB
+    #     memory_size = get_memory_size(param_tensor) / (1024 ** 2)  #
     #     print(f"Parameter Name: {param_name}\tSize: {param_size}\tMemory Size: {memory_size:.2f} MB")
     # exit()
 
-    # 冻结参数、设置可学习参数
+
     # for name, param in memllm.named_parameters():
     #     for i in range(0, 32):
     #         layer_th = 'layers.' + str(i) + '.'
@@ -123,14 +123,14 @@ if __name__ == "__main__":
         #     continue
         param.requires_grad = False
 
-    # 确认哪些参数被冻结
+
     print("\nFrozen parameters:")
     for name, param in memllm.named_parameters():
         if not param.requires_grad:
             print(name)
     # params_before_update = {name: param.clone() for name, param in memllm.named_parameters()}
 
-    # 设置损失函数
+
     criterion = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, memllm.parameters()), lr=args.lr)
 
